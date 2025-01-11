@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الصفحة الرئيسية</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 20px;
+            font-family: 'Arial', sans-serif;
+        }
+        .card {
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .card-text {
+            font-size: 1.2rem;
+            color: #28a745;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+            margin: 5px;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        .btn-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .btn-container .btn {
+            flex: 1 1 200px;
+            max-width: 300px;
+        }
+        .description {
+            margin-top: 20px;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">أداة تبادل المشاهدات والاشتراكات</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="index.html">الصفحة الرئيسية</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="generate.html">توليد الكود</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="display.html">عرض القناة/الفيديو</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="how-to-use.html">كيفية الاستخدام</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1 class="text-center mb-4">الصفحة الرئيسية</h1>
+
+        <div class="description">
+            <p>
+                هذه الأداة تتيح لك تبادل المشاهدات والاشتراكات على YouTube مع مستخدمين آخرين.
+                يمكنك توليد أكواد لمقاطع الفيديو أو القنوات الخاصة بك، ومشاركتها مع الآخرين لكسب النقاط.
+            </p>
+            <p>
+                لبدء الاستخدام، انتقل إلى صفحة <a href="generate.html">توليد الكود</a> لإنشاء كود خاص بك،
+                أو انتقل إلى صفحة <a href="display.html">عرض القناة/الفيديو</a> لإدخال كود مولد.
+            </p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">النقاط المتاحة</h5>
+                        <p class="card-text" id="userPoints">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">عدد الأكواد المولدة</h5>
+                        <p class="card-text" id="generatedCodesCount">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">عدد الفيديوهات المشاهدة</h5>
+                        <p class="card-text" id="watchedVideosCount">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">عدد القنوات المشترك بها</h5>
+                        <p class="card-text" id="subscribedChannelsCount">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-container">
+            <a href="generate.html" class="btn btn-primary">توليد الكود</a>
+            <a href="display.html" class="btn btn-primary">عرض القناة/الفيديو</a>
+            <a href="how-to-use.html" class="btn btn-primary">كيفية الاستخدام</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        window.onload = function () {
+            const savedPoints = localStorage.getItem('userPoints') || 0;
+            const generatedCodes = JSON.parse(localStorage.getItem('usedCodes') || '[]');
+            const history = JSON.parse(localStorage.getItem('history') || '[]');
+
+            document.getElementById('userPoints').innerText = savedPoints;
+            document.getElementById('generatedCodesCount').innerText = generatedCodes.length;
+
+            const watchedVideos = history.filter(item => item.type === 'video' || item.type === 'bonusVideo').length;
+            const subscribedChannels = history.filter(item => item.type === 'channel' || item.type === 'bonusChannel').length;
+
+            document.getElementById('watchedVideosCount').innerText = watchedVideos;
+            document.getElementById('subscribedChannelsCount').innerText = subscribedChannels;
+        };
+    </script>
+</body>
+</html>

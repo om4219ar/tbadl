@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>توليد الكود</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 20px;
+            font-family: 'Arial', sans-serif;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-control {
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: right;
+        }
+        .btn {
+            border-radius: 5px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        textarea {
+            resize: none;
+        }
+        .points-display {
+            font-size: 18px;
+            font-weight: bold;
+            color: #28a745;
+            margin-top: 20px;
+        }
+        .bonus-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+        }
+        #combinedFields {
+            display: none; /* يتم إظهاره عند اختيار "مشاهدة واشتراك" */
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">أداة تبادل المشاهدات والاشتراكات</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">الصفحة الرئيسية</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="generate.html">توليد الكود</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="display.html">عرض القناة/الفيديو</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="how-to-use.html">كيفية الاستخدام</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1 class="text-center mb-4">توليد الكود</h1>
+
+        <div class="points-display text-center">
+            النقاط المتاحة: <span id="userPoints">0</span>
+        </div>
+
+        <div class="form-group">
+            <label for="contentType">نوع المحتوى:</label>
+            <select id="contentType" class="form-control" onchange="toggleFields()">
+                <option value="video">فيديو</option>
+                <option value="channel">قناة</option>
+                <option value="combined">مشاهدة واشتراك</option>
+            </select>
+        </div>
+
+        <div id="videoFields">
+            <div class="form-group">
+                <label for="videoUrl">رابط الفيديو:</label>
+                <input type="text" id="videoUrl" class="form-control" placeholder="أدخل رابط الفيديو..." onblur="addHttps('videoUrl')">
+            </div>
+            <div class="form-group">
+                <label for="videoTitle">عنوان الفيديو:</label>
+                <input type="text" id="videoTitle" class="form-control" placeholder="أدخل عنوان الفيديو...">
+            </div>
+            <div class="form-group">
+                <label for="videoDuration">المدة (بالثواني):</label>
+                <input type="number" id="videoDuration" class="form-control" placeholder="أدخل المدة..." oninput="calculateVideoPoints()">
+            </div>
+            <div class="form-group">
+                <label for="videoPoints">نقاط الفيديو:</label>
+                <input type="number" id="videoPoints" class="form-control" placeholder="أدخل نقاط الفيديو..." readonly>
+            </div>
+        </div>
+
+        <div id="channelFields">
+            <div class="form-group">
+                <label for="channelUrl">رابط القناة:</label>
+                <input type="text" id="channelUrl" class="form-control" placeholder="أدخل رابط القناة..." onblur="addHttps('channelUrl')">
+            </div>
+            <div class="form-group">
+                <label for="channelTitle">عنوان القناة:</label>
+                <input type="text" id="channelTitle" class="form-control" placeholder="أدخل عنوان القناة...">
+            </div>
+            <div class="form-group">
+                <label for="channelPoints">نقاط الاشتراك:</label>
+                <input type="number" id="channelPoints" class="form-control" placeholder="أدخل نقاط الاشتراك..." min="10" value="10">
+            </div>
+        </div>
+
+        <div id="combinedFields">
+            <div class="form-group">
+                <label for="combinedVideoUrl">رابط الفيديو:</label>
+                <input type="text" id="combinedVideoUrl" class="form-control" placeholder="أدخل رابط الفيديو..." onblur="addHttps('combinedVideoUrl')">
+            </div>
+            <div class="form-group">
+                <label for="combinedVideoTitle">عنوان الفيديو:</label>
+                <input type="text" id="combinedVideoTitle" class="form-control" placeholder="أدخل عنوان الفيديو...">
+            </div>
+            <div class="form-group">
+                <label for="combinedVideoDuration">المدة (بالثواني):</label>
+                <input type="number" id="combinedVideoDuration" class="form-control" placeholder="أدخل المدة..." oninput="calculateCombinedVideoPoints()">
+            </div>
+            <div class="form-group">
+                <label for="combinedVideoPoints">نقاط الفيديو:</label>
+                <input type="number" id="combinedVideoPoints" class="form-control" placeholder="أدخل نقاط الفيديو..." readonly>
+            </div>
+            <div class="form-group">
+                <label for="combinedChannelUrl">رابط القناة:</label>
+                <input type="text" id="combinedChannelUrl" class="form-control" placeholder="أدخل رابط القناة..." onblur="addHttps('combinedChannelUrl')">
+            </div>
+            <div class="form-group">
+                <label for="combinedChannelTitle">عنوان القناة:</label>
+                <input type="text" id="combinedChannelTitle" class="form-control" placeholder="أدخل عنوان القناة...">
+            </div>
+            <div class="form-group">
+                <label for="combinedChannelPoints">نقاط الاشتراك:</label>
+                <input type="number" id="combinedChannelPoints" class="form-control" placeholder="أدخل نقاط الاشتراك..." min="10" value="10">
+            </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="generateCode()">توليد الكود</button>
+
+        <div class="mt-4">
+            <h3>الكود المولد:</h3>
+            <textarea id="generatedCode" class="form-control" rows="5" readonly></textarea>
+            <button class="btn btn-success mt-2" onclick="copyCode()">نسخ الكود</button>
+        </div>
+
+        <div class="bonus-section">
+            <h3>المكافآت:</h3>
+            <p>يمكنك استخدام فيديو المكافأة أو قناة المكافأة لكسب نقاط إضافية!</p>
+            <button class="btn btn-warning" onclick="loadBonusVideo()">فيديو المكافأة</button>
+            <button class="btn btn-warning" onclick="loadBonusChannel()">قناة المكافأة</button>
+        </div>
+
+        <div class="mt-4">
+            <h3>الأكواد المحفوظة:</h3>
+            <div id="savedCodesList"></div>
+            <button class="btn btn-danger mt-2" onclick="clearSavedCodes()">تفريغ الأكواد المحفوظة</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        let userPoints = 0;
+
+        window.onload = function () {
+            const savedPoints = localStorage.getItem('userPoints') || 0;
+            userPoints = parseInt(savedPoints);
+            updatePoints();
+            loadSavedCodes();
+        };
+
+        function toggleFields() {
+            const contentType = document.getElementById('contentType').value;
+            const videoFields = document.getElementById('videoFields');
+            const channelFields = document.getElementById('channelFields');
+            const combinedFields = document.getElementById('combinedFields');
+
+            if (contentType === 'video') {
+                videoFields.style.display = 'block';
+                channelFields.style.display = 'none';
+                combinedFields.style.display = 'none';
+            } else if (contentType === 'channel') {
+                videoFields.style.display = 'none';
+                channelFields.style.display = 'block';
+                combinedFields.style.display = 'none';
+            } else if (contentType === 'combined') {
+                videoFields.style.display = 'none';
+                channelFields.style.display = 'none';
+                combinedFields.style.display = 'block';
+            }
+        }
+
+        function addHttps(fieldId) {
+            const inputField = document.getElementById(fieldId);
+            let url = inputField.value.trim();
+
+            if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
+                url = 'https://' + url;
+                inputField.value = url;
+            }
+        }
+
+        function calculateVideoPoints() {
+            const duration = document.getElementById('videoDuration').value;
+            const points = Math.floor(duration / 30) * 10;
+            document.getElementById('videoPoints').value = points >= 10 ? points : 10;
+        }
+
+        function calculateCombinedVideoPoints() {
+            const duration = document.getElementById('combinedVideoDuration').value;
+            const points = Math.floor(duration / 30) * 10;
+            document.getElementById('combinedVideoPoints').value = points >= 10 ? points : 10;
+        }
+
+        function generateCode() {
+            const contentType = document.getElementById('contentType').value;
+            let contentData = {};
+
+            if (contentType === 'video') {
+                const videoUrl = document.getElementById('videoUrl').value;
+                const videoTitle = document.getElementById('videoTitle').value;
+                const videoDuration = document.getElementById('videoDuration').value;
+                const videoPoints = parseInt(document.getElementById('videoPoints').value);
+
+                if (!videoUrl || !videoTitle || !videoDuration || !videoPoints) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'تحذير',
+                        text: 'يرجى إدخال جميع البيانات!',
+                    });
+                    return;
+                }
+
+                contentData = {
+                    type: contentType,
+                    url: videoUrl,
+                    title: videoTitle,
+                    duration: videoDuration,
+                    points: videoPoints
+                };
+            } else if (contentType === 'channel') {
+                const channelUrl = document.getElementById('channelUrl').value;
+                const channelTitle = document.getElementById('channelTitle').value;
+                const channelPoints = parseInt(document.getElementById('channelPoints').value);
+
+                if (!channelUrl || !channelTitle || !channelPoints) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'تحذير',
+                        text: 'يرجى إدخال جميع البيانات!',
+                    });
+                    return;
+                }
+
+                if (channelPoints < 10) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'تحذير',
+                        text: 'الحد الأدنى لنقاط الاشتراك هو 10 نقاط!',
+                    });
+                    return;
+                }
+
+                contentData = {
+                    type: contentType,
+                    url: channelUrl,
+                    title: channelTitle,
+                    points: channelPoints
+                };
+            } else if (contentType === 'combined') {
+                const combinedVideoUrl = document.getElementById('combinedVideoUrl').value;
+                const combinedVideoTitle = document.getElementById('combinedVideoTitle').value;
+                const combinedVideoDuration = document.getElementById('combinedVideoDuration').value;
+                const combinedVideoPoints = parseInt(document.getElementById('combinedVideoPoints').value);
+                const combinedChannelUrl = document.getElementById('combinedChannelUrl').value;
+                const combinedChannelTitle = document.getElementById('combinedChannelTitle').value;
+                const combinedChannelPoints = parseInt(document.getElementById('combinedChannelPoints').value);
+
+                if (!combinedVideoUrl || !combinedVideoTitle || !combinedVideoDuration || !combinedVideoPoints ||
+                    !combinedChannelUrl || !combinedChannelTitle || !combinedChannelPoints) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'تحذير',
+                        text: 'يرجى إدخال جميع البيانات!',
+                    });
+                    return;
+                }
+
+                if (combinedChannelPoints < 10) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'تحذير',
+                        text: 'الحد الأدنى لنقاط الاشتراك هو 10 نقاط!',
+                    });
+                    return;
+                }
+
+                contentData = {
+                    type: contentType,
+                    video: {
+                        url: combinedVideoUrl,
+                        title: combinedVideoTitle,
+                        duration: combinedVideoDuration,
+                        points: combinedVideoPoints
+                    },
+                    channel: {
+                        url: combinedChannelUrl,
+                        title: combinedChannelTitle,
+                        points: combinedChannelPoints
+                    }
+                };
+            }
+
+            // حساب إجمالي النقاط المطلوبة
+            const totalPoints = contentData.type === 'combined' ?
+                parseInt(contentData.video.points) + parseInt(contentData.channel.points) :
+                parseInt(contentData.points);
+
+            // التحقق من نقاط المستخدم
+            if (userPoints < totalPoints) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'نقاط غير كافية!',
+                    text: `أنت تحتاج إلى ${totalPoints} نقاط لتوليد هذا الكود. النقاط المتاحة: ${userPoints}`,
+                });
+                return;
+            }
+
+            // خصم النقاط
+            userPoints -= totalPoints;
+            updatePoints();
+
+            // توليد الكود
+            const jsonString = JSON.stringify(contentData);
+            const generatedCode = btoa(unescape(encodeURIComponent(jsonString)));
+            document.getElementById('generatedCode').value = generatedCode;
+
+            Swal.fire({
+                icon: 'success',
+                title: 'تمت العملية!',
+                text: `تم توليد الكود بنجاح وخصم ${totalPoints} نقاط.`,
+            });
+
+            // حفظ الكود المولد
+            saveGeneratedCode(generatedCode, contentData);
+        }
+
+        function saveGeneratedCode(code, contentData) {
+            const savedCodes = JSON.parse(localStorage.getItem('savedCodes') || '[]');
+            savedCodes.push({ code, contentData });
+            localStorage.setItem('savedCodes', JSON.stringify(savedCodes));
+            loadSavedCodes();
+        }
+
+        function loadSavedCodes() {
+            const savedCodes = JSON.parse(localStorage.getItem('savedCodes') || '[]');
+            const savedCodesList = document.getElementById('savedCodesList');
+            savedCodesList.innerHTML = '';
+
+            savedCodes.forEach((item, index) => {
+                const codeItem = document.createElement('div');
+                codeItem.className = 'history-item';
+                codeItem.innerHTML = `
+                    <h5>${item.contentData.title || item.contentData.video.title}</h5>
+                    <p>النقاط: ${item.contentData.points || item.contentData.video.points + item.contentData.channel.points}</p>
+                    <textarea class="form-control mt-2" rows="2" readonly>${item.code}</textarea>
+                    <button class="btn btn-primary mt-2" onclick="copySavedCode('${item.code}')">نسخ الكود</button>
+                `;
+                savedCodesList.appendChild(codeItem);
+            });
+        }
+
+        function copySavedCode(code) {
+            navigator.clipboard.writeText(code).then(() => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'تم النسخ!',
+                    text: 'تم نسخ الكود بنجاح.',
+                });
+            });
+        }
+
+        function clearSavedCodes() {
+            Swal.fire({
+                title: 'هل أنت متأكد؟',
+                text: "سيتم حذف جميع الأكواد المحفوظة بشكل دائم!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'نعم، احذفها!',
+                cancelButtonText: 'إلغاء'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    localStorage.removeItem('savedCodes');
+                    loadSavedCodes();
+                    Swal.fire(
+                        'تم الحذف!',
+                        'تم حذف جميع الأكواد المحفوظة.',
+                        'success'
+                    );
+                }
+            });
+        }
+
+        function loadBonusVideo() {
+            const bonusVideoCode = "eyJ0eXBlIjoiYm9udXNWaWRlbyIsInVybCI6Imh0dHBzOi8vd3d3LnlvdXR1YmUuY29tL3dhdGNoP3Y9ZDlxNHc5V2dYY1EiLCJ0aXRsZSI6ImluY3JlZGlibGUgdGVjaG5vbG9neSIsInBvaW50cyI6IjEwMCIsImR1cmF0aW9uIjoiNjAifQ==";
+            document.getElementById('generatedCode').value = bonusVideoCode;
+            Swal.fire({
+                icon: 'info',
+                title: 'فيديو المكافأة',
+                text: 'تم تحميل كود فيديو المكافأة. انقر على "عرض الفيديو" لبدء المشاهدة.',
+            });
+        }
+
+        function loadBonusChannel() {
+            const bonusChannelCode = "eyJ0eXBlIjoiYm9udXNDaGFubmVsIiwidXJsIjoiaHR0cHM6Ly93d3cueW91dHViZS5jb20vY2hhbm5lbC9VQzEyMzQ1Njc4OTA/IiwidGl0bGUiOiJNeSBDaGFubmVsIiwicG9pbnRzIjoiMTAwIn0=";
+            document.getElementById('generatedCode').value = bonusChannelCode;
+            Swal.fire({
+                icon: 'info',
+                title: 'قناة المكافأة',
+                text: 'تم تحميل كود قناة المكافأة. انقر على "عرض القناة" لبدء الاشتراك.',
+            });
+        }
+
+        function copyCode() {
+            const codeTextarea = document.getElementById('generatedCode');
+            codeTextarea.select();
+            document.execCommand('copy');
+            Swal.fire({
+                icon: 'success',
+                title: 'تم النسخ!',
+                text: 'تم نسخ الكود المولد بنجاح.',
+            });
+        }
+
+        function updatePoints() {
+            document.getElementById('userPoints').innerText = userPoints;
+            localStorage.setItem('userPoints', userPoints);
+        }
+    </script>
+</body>
+</html>

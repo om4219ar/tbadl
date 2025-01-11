@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>عرض القناة/الفيديو</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 20px;
+            font-family: 'Arial', sans-serif;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-control {
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: right;
+        }
+        .btn {
+            border-radius: 5px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .video-card, .channel-card {
+            margin-bottom: 20px;
+        }
+        #player, #combinedPlayer {
+            width: 100%;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+        .countdown {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007bff;
+            margin-top: 10px;
+        }
+        .points-display {
+            font-size: 18px;
+            font-weight: bold;
+            color: #28a745;
+            margin-top: 20px;
+        }
+        .history {
+            margin-top: 20px;
+        }
+        .history-item {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        #subscribeButton, #combinedSubscribeButton {
+            display: none; /* يتم إظهاره بعد 10 ثواني */
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">أداة تبادل المشاهدات والاشتراكات</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">الصفحة الرئيسية</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="generate.html">توليد الكود</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="display.html">عرض القناة/الفيديو</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="how-to-use.html">كيفية الاستخدام</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1 class="text-center mb-4">عرض القناة/الفيديو</h1>
+
+        <div class="points-display text-center">
+            النقاط المتاحة: <span id="userPoints">0</span>
+        </div>
+
+        <div class="form-group">
+            <label for="generatedCode">الكود المولد:</label>
+            <textarea id="generatedCode" class="form-control" rows="5" placeholder="الصق الكود المولد هنا..."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="loadContent()">عرض المحتوى</button>
+
+        <div id="contentDisplay" class="mt-4" style="display: none;">
+            <div id="videoDisplay" class="video-card">
+                <div class="card">
+                    <div id="player"></div>
+                    <div class="card-body">
+                        <h5 id="videoTitle" class="card-title"></h5>
+                        <p id="videoPoints" class="card-text"></p>
+                        <p id="videoDuration" class="card-text"></p>
+                        <div class="countdown">الوقت المتبقي: <span id="videoCountdown">0</span> ثانية</div>
+                        <button class="btn btn-success mt-2" onclick="playVideo()">تشغيل الفيديو</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="channelDisplay" class="channel-card">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 id="channelTitle" class="card-title"></h5>
+                        <p id="channelPoints" class="card-text"></p>
+                        <a id="channelLink" target="_blank" class="btn btn-success" onclick="openChannelLink()">الانتقال إلى القناة</a>
+                        <button id="subscribeButton" class="btn btn-warning mt-2" onclick="confirmSubscription()">تم الاشتراك</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="combinedDisplay" class="combined-card">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 id="combinedVideoTitle" class="card-title"></h5>
+                        <p id="combinedVideoPoints" class="card-text"></p>
+                        <p id="combinedVideoDuration" class="card-text"></p>
+                        <div id="combinedPlayer"></div>
+                        <div class="countdown">الوقت المتبقي: <span id="combinedCountdown">0</span> ثانية</div>
+                        <button class="btn btn-success mt-2" onclick="playCombinedVideo()">تشغيل الفيديو</button>
+
+                        <h5 id="combinedChannelTitle" class="card-title mt-4"></h5>
+                        <p id="combinedChannelPoints" class="card-text"></p>
+                        <a id="combinedChannelLink" target="_blank" class="btn btn-success" onclick="openCombinedChannelLink()">الانتقال إلى القناة</a>
+                        <button id="combinedSubscribeButton" class="btn btn-warning mt-2" onclick="confirmCombinedSubscription()" style="display: none;">تم الاشتراك</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn btn-danger mt-4" onclick="clearHistory()">تفريغ التاريخ</button>
+
+        <div class="history mt-4">
+            <h2>التاريخ:</h2>
+            <div id="historyList"></div>
+        </div>
+    </div>
+
+    <!-- YouTube IFrame API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        let contentData = null;
+        let userPoints = 0;
+        let player;
+        let combinedPlayer;
+        let countdownInterval;
+
+        window.onload = function () {
+            const savedPoints = localStorage.getItem('userPoints') || 0;
+            if (savedPoints !== null) {
+                userPoints = parseInt(savedPoints);
+                updatePoints();
+            }
+            loadHistory();
+        };
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '300',
+                width: '100%',
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+
+            combinedPlayer = new YT.Player('combinedPlayer', {
+                height: '300',
+                width: '100%',
+                events: {
+                    'onReady': onCombinedPlayerReady,
+                    'onStateChange': onCombinedPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            console.log('المشغل جاهز!');
+        }
+
+        function onCombinedPlayerReady(event) {
+            console.log('مشغل المزيج جاهز!');
+        }
+
+        function onPlayerStateChange(event) {
+            if (event.data === YT.PlayerState.PLAYING) {
+                startCountdown(contentData.video.duration);
+            } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+                stopCountdown();
+            }
+        }
+
+        function onCombinedPlayerStateChange(event) {
+            if (event.data === YT.PlayerState.PLAYING) {
+                startCombinedCountdown(contentData.video.duration);
+            } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+                stopCombinedCountdown();
+            }
+        }
+
+        function startCountdown(duration) {
+            let remainingTime = duration;
+            const countdownElement = document.getElementById('videoCountdown');
+
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+
+            countdownInterval = setInterval(() => {
+                if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+                    countdownElement.innerText = remainingTime;
+                    if (--remainingTime < 0) {
+                        clearInterval(countdownInterval);
+                        countdownElement.innerText = '0';
+                        userPoints += contentData.video.points;
+                        updatePoints();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'مكافأة!',
+                            text: `لقد حصلت على ${contentData.video.points} نقاط بعد مشاهدة الفيديو لمدة ${contentData.video.duration} ثانية!`,
+                        });
+                    }
+                } else {
+                    stopCountdown();
+                }
+            }, 1000);
+        }
+
+        function startCombinedCountdown(duration) {
+            let remainingTime = duration;
+            const countdownElement = document.getElementById('combinedCountdown');
+
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+
+            countdownInterval = setInterval(() => {
+                if (combinedPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
+                    countdownElement.innerText = remainingTime;
+                    if (--remainingTime < 0) {
+                        clearInterval(countdownInterval);
+                        countdownElement.innerText = '0';
+                        userPoints += contentData.video.points;
+                        updatePoints();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'مكافأة!',
+                            text: `لقد حصلت على ${contentData.video.points} نقاط بعد مشاهدة الفيديو لمدة ${contentData.video.duration} ثانية!`,
+                        });
+                    }
+                } else {
+                    stopCombinedCountdown();
+                }
+            }, 1000);
+        }
+
+        function stopCountdown() {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+        }
+
+        function stopCombinedCountdown() {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+        }
+
+        function loadContent() {
+            const generatedCode = document.getElementById('generatedCode').value;
+
+            if (!generatedCode) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'تحذير',
+                    text: 'يرجى إدخال كود مولد!',
+                });
+                return;
+            }
+
+            const usedCodes = JSON.parse(localStorage.getItem('usedCodes') || '[]');
+
+            if (usedCodes.includes(generatedCode)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'هذا الكود مستخدم مسبقًا!',
+                    text: 'يمكنك إنشاء كود جديد لتوليد محتوى آخر.',
+                });
+                return;
+            }
+
+            try {
+                const decodedCode = atob(generatedCode);
+                const jsonString = decodeURIComponent(escape(decodedCode));
+                contentData = JSON.parse(jsonString);
+
+                if (contentData.type === 'video') {
+                    document.getElementById('videoTitle').innerText = contentData.title;
+                    document.getElementById('videoPoints').innerText = `النقاط: ${contentData.points}`;
+                    document.getElementById('videoDuration').innerText = `المدة: ${contentData.duration} ثانية`;
+
+                    player.cueVideoById(extractVideoId(contentData.url)); // تحميل الفيديو دون تشغيل
+
+                    document.getElementById('videoDisplay').style.display = 'block';
+                    document.getElementById('channelDisplay').style.display = 'none';
+                    document.getElementById('combinedDisplay').style.display = 'none';
+                } else if (contentData.type === 'channel') {
+                    document.getElementById('channelTitle').innerText = contentData.title;
+                    document.getElementById('channelPoints').innerText = `النقاط: ${contentData.points}`;
+                    document.getElementById('channelLink').href = contentData.url;
+
+                    document.getElementById('channelDisplay').style.display = 'block';
+                    document.getElementById('videoDisplay').style.display = 'none';
+                    document.getElementById('combinedDisplay').style.display = 'none';
+                } else if (contentData.type === 'combined') {
+                    document.getElementById('combinedVideoTitle').innerText = contentData.video.title;
+                    document.getElementById('combinedVideoPoints').innerText = `نقاط الفيديو: ${contentData.video.points}`;
+                    document.getElementById('combinedVideoDuration').innerText = `المدة: ${contentData.video.duration} ثانية`;
+
+                    combinedPlayer.cueVideoById(extractVideoId(contentData.video.url)); // تحميل الفيديو دون تشغيل
+
+                    document.getElementById('combinedChannelTitle').innerText = contentData.channel.title;
+                    document.getElementById('combinedChannelPoints').innerText = `نقاط الاشتراك: ${contentData.channel.points}`;
+                    document.getElementById('combinedChannelLink').href = contentData.channel.url;
+
+                    document.getElementById('combinedDisplay').style.display = 'block';
+                    document.getElementById('videoDisplay').style.display = 'none';
+                    document.getElementById('channelDisplay').style.display = 'none';
+                }
+
+                document.getElementById('contentDisplay').style.display = 'block';
+
+                usedCodes.push(generatedCode);
+                localStorage.setItem('usedCodes', JSON.stringify(usedCodes));
+
+                addToHistory(contentData);
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطأ',
+                    text: 'الكود غير صالح! يرجى إدخال كود صحيح.',
+                });
+            }
+        }
+
+        function extractVideoId(url) {
+            if (url.includes('youtu.be')) {
+                return url.split('/').pop().split('?')[0];
+            } else if (url.includes('v=')) {
+                const match = url.match(/v=([^&]+)/);
+                return match ? match[1] : null;
+            } else if (url.includes('shorts/')) {
+                return url.split('shorts/')[1].split('?')[0];
+            }
+            return null;
+        }
+
+        function openChannelLink() {
+            const channelLink = document.getElementById('channelLink').href;
+            window.open(channelLink, '_blank');
+            setTimeout(() => {
+                document.getElementById('subscribeButton').style.display = 'block';
+            }, 10000); // إظهار الزر بعد 10 ثواني
+        }
+
+        function openCombinedChannelLink() {
+            const channelLink = document.getElementById('combinedChannelLink').href;
+            window.open(channelLink, '_blank');
+            setTimeout(() => {
+                document.getElementById('combinedSubscribeButton').style.display = 'block';
+            }, 10000); // إظهار الزر بعد 10 ثواني
+        }
+
+        function confirmSubscription() {
+            userPoints += contentData.channel.points;
+            updatePoints();
+            Swal.fire({
+                icon: 'success',
+                title: 'تم الاشتراك!',
+                text: `لقد حصلت على ${contentData.channel.points} نقاط بعد الاشتراك في القناة!`,
+            });
+        }
+
+        function confirmCombinedSubscription() {
+            userPoints += contentData.channel.points;
+            updatePoints();
+            Swal.fire({
+                icon: 'success',
+                title: 'تم الاشتراك!',
+                text: `لقد حصلت على ${contentData.channel.points} نقاط بعد الاشتراك في القناة!`,
+            });
+        }
+
+        function updatePoints() {
+            document.getElementById('userPoints').innerText = userPoints;
+            localStorage.setItem('userPoints', userPoints);
+        }
+
+        function addToHistory(content) {
+            const history = JSON.parse(localStorage.getItem('history') || '[]');
+
+            if (content.type === 'combined') {
+                // حفظ بيانات المزيج (فيديو + قناة)
+                history.unshift({
+                    type: 'combined',
+                    video: content.video,
+                    channel: content.channel
+                });
+            } else {
+                // حفظ بيانات الفيديو أو القناة العادية
+                history.unshift(content);
+            }
+
+            localStorage.setItem('history', JSON.stringify(history));
+            loadHistory();
+        }
+
+        function loadHistory() {
+            const history = JSON.parse(localStorage.getItem('history') || '[]');
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+
+            history.forEach((item, index) => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+
+                if (item.type === 'combined') {
+                    // عرض بيانات المزيج
+                    historyItem.innerHTML = `
+                        <h5>فيديو: ${item.video.title}</h5>
+                        <p>نقاط الفيديو: ${item.video.points}</p>
+                        <p>مدة الفيديو: ${item.video.duration} ثانية</p>
+                        <a href="${item.video.url}" target="_blank" class="btn btn-primary">زيارة الفيديو</a>
+                        <h5 class="mt-3">قناة: ${item.channel.title}</h5>
+                        <p>نقاط الاشتراك: ${item.channel.points}</p>
+                        <a href="${item.channel.url}" target="_blank" class="btn btn-primary">زيارة القناة</a>
+                    `;
+                } else {
+                    // عرض بيانات الفيديو أو القناة العادية
+                    historyItem.innerHTML = `
+                        <h5>${item.title}</h5>
+                        <p>النقاط: ${item.points}</p>
+                        ${item.duration ? `<p>المدة: ${item.duration} ثانية</p>` : ''}
+                        <a href="${item.url}" target="_blank" class="btn btn-primary">زيارة ${item.type === 'video' ? 'الفيديو' : 'القناة'}</a>
+                    `;
+                }
+
+                historyList.appendChild(historyItem);
+            });
+        }
+
+        function clearHistory() {
+            localStorage.removeItem('history');
+            loadHistory();
+            Swal.fire({
+                icon: 'success',
+                title: 'تم التفريغ!',
+                text: 'تم حذف التاريخ بنجاح.',
+            });
+        }
+    </script>
+</body>
+</html>
