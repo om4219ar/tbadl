@@ -112,7 +112,7 @@
                         <p id="videoPoints" class="card-text"></p>
                         <p id="videoDuration" class="card-text"></p>
                         <div class="countdown">الوقت المتبقي: <span id="videoCountdown">0</span> ثانية</div>
-                        <button class="btn btn-success mt-2" onclick="playVideo()">تشغيل الفيديو</button>
+                        <button class="btn btn-success mt-2" onclick="openVideoLink()">فتح الفيديو في يوتيوب</button>
                     </div>
                 </div>
             </div>
@@ -136,7 +136,7 @@
                         <p id="combinedVideoDuration" class="card-text"></p>
                         <div id="combinedPlayer"></div>
                         <div class="countdown">الوقت المتبقي: <span id="combinedCountdown">0</span> ثانية</div>
-                        <button class="btn btn-success mt-2" onclick="playCombinedVideo()">تشغيل الفيديو</button>
+                        <button class="btn btn-success mt-2" onclick="openCombinedVideoLink()">فتح الفيديو في يوتيوب</button>
 
                         <h5 id="combinedChannelTitle" class="card-title mt-4"></h5>
                         <p id="combinedChannelPoints" class="card-text"></p>
@@ -392,6 +392,16 @@
             setTimeout(() => {
                 document.getElementById('combinedSubscribeButton').style.display = 'block';
             }, 10000); // إظهار الزر بعد 10 ثواني
+        }
+
+        function openVideoLink() {
+            const videoLink = contentData.url;
+            window.open(videoLink, '_blank');
+        }
+
+        function openCombinedVideoLink() {
+            const videoLink = contentData.video.url;
+            window.open(videoLink, '_blank');
         }
 
         function confirmSubscription() {
