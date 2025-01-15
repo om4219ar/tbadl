@@ -233,7 +233,7 @@
                     if (--remainingTime < 0) {
                         clearInterval(countdownInterval);
                         countdownElement.innerText = '0';
-                        userPoints += contentData.points || contentData.video.points; // تحديث النقاط
+                        userPoints += contentData.points || contentData.video.points;
                         updatePoints();
                         Swal.fire({
                             icon: 'success',
@@ -261,7 +261,7 @@
                     if (--remainingTime < 0) {
                         clearInterval(countdownInterval);
                         countdownElement.innerText = '0';
-                        userPoints += contentData.video.points; // تحديث النقاط
+                        userPoints += contentData.video.points;
                         updatePoints();
                         Swal.fire({
                             icon: 'success',
@@ -422,23 +422,57 @@
         }
 
         function confirmSubscription() {
-            userPoints += contentData.channel.points;
-            updatePoints();
-            Swal.fire({
-                icon: 'success',
-                title: 'تم الاشتراك!',
-                text: `لقد حصلت على ${contentData.channel.points} نقاط بعد الاشتراك في القناة!`,
-            });
+            if (contentData) {
+                let points = 0;
+
+                if (contentData.type === "channel") {
+                    // حالة القناة الفردية
+                    points = contentData.points;
+                } else if (contentData.type === "combined" && contentData.channel) {
+                    // حالة المزيج (فيديو + قناة)
+                    points = contentData.channel.points;
+                }
+
+                if (points > 0) {
+                    userPoints += points;
+                    updatePoints();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'تم الاشتراك!',
+                        text: `لقد حصلت على ${points} نقاط بعد الاشتراك في القناة!`,
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'خطأ',
+                        text: 'لا توجد نقاط متاحة للقناة!',
+                    });
+                }
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطأ',
+                    text: 'لا يوجد بيانات قناة متاحة!',
+                });
+            }
         }
 
         function confirmCombinedSubscription() {
-            userPoints += contentData.channel.points;
-            updatePoints();
-            Swal.fire({
-                icon: 'success',
-                title: 'تم الاشتراك!',
-                text: `لقد حصلت على ${contentData.channel.points} نقاط بعد الاشتراك في القناة!`,
-            });
+            if (contentData && contentData.channel) {
+                userPoints += contentData.channel.points;
+                updatePoints();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'تم الاشتراك!',
+                    text: `لقد حصلت على ${contentData.channel.points} نقاط بعد الاشتراك في القناة!`,
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطأ',
+                    text: 'لا يوجد بيانات قناة متاحة!',
+                });
+            }
         }
 
         function updatePoints() {
@@ -510,4 +544,4 @@
         }
     </script>
 </body>
-</html> 
+</html>
