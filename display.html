@@ -205,7 +205,7 @@
 
         function onPlayerStateChange(event) {
             if (event.data === YT.PlayerState.PLAYING) {
-                startCountdown(contentData.video.duration);
+                startCountdown(contentData.duration || contentData.video.duration);
             } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
                 stopCountdown();
             }
@@ -233,12 +233,12 @@
                     if (--remainingTime < 0) {
                         clearInterval(countdownInterval);
                         countdownElement.innerText = '0';
-                        userPoints += contentData.video.points;
+                        userPoints += contentData.points || contentData.video.points; // تحديث النقاط
                         updatePoints();
                         Swal.fire({
                             icon: 'success',
                             title: 'مكافأة!',
-                            text: `لقد حصلت على ${contentData.video.points} نقاط بعد مشاهدة الفيديو لمدة ${contentData.video.duration} ثانية!`,
+                            text: `لقد حصلت على ${contentData.points || contentData.video.points} نقاط بعد مشاهدة الفيديو لمدة ${duration} ثانية!`,
                         });
                     }
                 } else {
@@ -261,12 +261,12 @@
                     if (--remainingTime < 0) {
                         clearInterval(countdownInterval);
                         countdownElement.innerText = '0';
-                        userPoints += contentData.video.points;
+                        userPoints += contentData.video.points; // تحديث النقاط
                         updatePoints();
                         Swal.fire({
                             icon: 'success',
                             title: 'مكافأة!',
-                            text: `لقد حصلت على ${contentData.video.points} نقاط بعد مشاهدة الفيديو لمدة ${contentData.video.duration} ثانية!`,
+                            text: `لقد حصلت على ${contentData.video.points} نقاط بعد مشاهدة الفيديو لمدة ${duration} ثانية!`,
                         });
                     }
                 } else {
@@ -312,58 +312,75 @@
                 return;
             }
 
-            try {
-                const decodedCode = atob(generatedCode);
-                const jsonString = decodeURIComponent(escape(decodedCode));
-                contentData = JSON.parse(jsonString);
+            // عرض التحذير قبل تحميل المحتوى
+            Swal.fire({
+                icon: 'warning',
+                title: 'تحذير من الغش',
+                html: `
+                    <p>يقول الله تعالى في كتابه الكريم: "وَيْلٌ لِلْمُطَفِّفِينَ، الَّذِينَ إِذَا اكْتَالُوا عَلَى النَّاسِ يَسْتَوْفُونَ، وَإِذَا كَالُوهُمْ أَوْ وَزَنُوهُمْ يُخْسِرُونَ" (سورة المطففين: 1-3).</p>
+                    <p>ويقول النبي صلى الله عليه وسلم: "مَنْ غَشَّ فَلَيْسَ مِنِّي" (رواه مسلم).</p>
+                    <p>الغش خيانة للأمانة، وهو من الكبائر التي حذر منها الإسلام. إذا غششت الآخرين، فاعلم أن الناس سوف يغشونك كما غششتهم. النجاح الحقيقي لا يُبنى على الغش، بل على الصدق والأمانة.</p>
+                    <p>لا تغش إذا أردت تحقيق النجاح. كن صادقًا مع نفسك ومع الآخرين، واعلم أن الله يراك في كل لحظة.</p>
+                `,
+                confirmButtonText: 'أوافق',
+                showCancelButton: true,
+                cancelButtonText: 'إلغاء',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    try {
+                        const decodedCode = atob(generatedCode);
+                        const jsonString = decodeURIComponent(escape(decodedCode));
+                        contentData = JSON.parse(jsonString);
 
-                if (contentData.type === 'video') {
-                    document.getElementById('videoTitle').innerText = contentData.title;
-                    document.getElementById('videoPoints').innerText = `النقاط: ${contentData.points}`;
-                    document.getElementById('videoDuration').innerText = `المدة: ${contentData.duration} ثانية`;
+                        if (contentData.type === 'video') {
+                            document.getElementById('videoTitle').innerText = contentData.title;
+                            document.getElementById('videoPoints').innerText = `النقاط: ${contentData.points}`;
+                            document.getElementById('videoDuration').innerText = `المدة: ${contentData.duration} ثانية`;
 
-                    player.cueVideoById(extractVideoId(contentData.url)); // تحميل الفيديو دون تشغيل
+                            player.cueVideoById(extractVideoId(contentData.url)); // تحميل الفيديو دون تشغيل
 
-                    document.getElementById('videoDisplay').style.display = 'block';
-                    document.getElementById('channelDisplay').style.display = 'none';
-                    document.getElementById('combinedDisplay').style.display = 'none';
-                } else if (contentData.type === 'channel') {
-                    document.getElementById('channelTitle').innerText = contentData.title;
-                    document.getElementById('channelPoints').innerText = `النقاط: ${contentData.points}`;
-                    document.getElementById('channelLink').href = contentData.url;
+                            document.getElementById('videoDisplay').style.display = 'block';
+                            document.getElementById('channelDisplay').style.display = 'none';
+                            document.getElementById('combinedDisplay').style.display = 'none';
+                        } else if (contentData.type === 'channel') {
+                            document.getElementById('channelTitle').innerText = contentData.title;
+                            document.getElementById('channelPoints').innerText = `النقاط: ${contentData.points}`;
+                            document.getElementById('channelLink').href = contentData.url;
 
-                    document.getElementById('channelDisplay').style.display = 'block';
-                    document.getElementById('videoDisplay').style.display = 'none';
-                    document.getElementById('combinedDisplay').style.display = 'none';
-                } else if (contentData.type === 'combined') {
-                    document.getElementById('combinedVideoTitle').innerText = contentData.video.title;
-                    document.getElementById('combinedVideoPoints').innerText = `نقاط الفيديو: ${contentData.video.points}`;
-                    document.getElementById('combinedVideoDuration').innerText = `المدة: ${contentData.video.duration} ثانية`;
+                            document.getElementById('channelDisplay').style.display = 'block';
+                            document.getElementById('videoDisplay').style.display = 'none';
+                            document.getElementById('combinedDisplay').style.display = 'none';
+                        } else if (contentData.type === 'combined') {
+                            document.getElementById('combinedVideoTitle').innerText = contentData.video.title;
+                            document.getElementById('combinedVideoPoints').innerText = `نقاط الفيديو: ${contentData.video.points}`;
+                            document.getElementById('combinedVideoDuration').innerText = `المدة: ${contentData.video.duration} ثانية`;
 
-                    combinedPlayer.cueVideoById(extractVideoId(contentData.video.url)); // تحميل الفيديو دون تشغيل
+                            combinedPlayer.cueVideoById(extractVideoId(contentData.video.url)); // تحميل الفيديو دون تشغيل
 
-                    document.getElementById('combinedChannelTitle').innerText = contentData.channel.title;
-                    document.getElementById('combinedChannelPoints').innerText = `نقاط الاشتراك: ${contentData.channel.points}`;
-                    document.getElementById('combinedChannelLink').href = contentData.channel.url;
+                            document.getElementById('combinedChannelTitle').innerText = contentData.channel.title;
+                            document.getElementById('combinedChannelPoints').innerText = `نقاط الاشتراك: ${contentData.channel.points}`;
+                            document.getElementById('combinedChannelLink').href = contentData.channel.url;
 
-                    document.getElementById('combinedDisplay').style.display = 'block';
-                    document.getElementById('videoDisplay').style.display = 'none';
-                    document.getElementById('channelDisplay').style.display = 'none';
+                            document.getElementById('combinedDisplay').style.display = 'block';
+                            document.getElementById('videoDisplay').style.display = 'none';
+                            document.getElementById('channelDisplay').style.display = 'none';
+                        }
+
+                        document.getElementById('contentDisplay').style.display = 'block';
+
+                        usedCodes.push(generatedCode);
+                        localStorage.setItem('usedCodes', JSON.stringify(usedCodes));
+
+                        addToHistory(contentData);
+                    } catch (error) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'خطأ',
+                            text: 'الكود غير صالح! يرجى إدخال كود صحيح.',
+                        });
+                    }
                 }
-
-                document.getElementById('contentDisplay').style.display = 'block';
-
-                usedCodes.push(generatedCode);
-                localStorage.setItem('usedCodes', JSON.stringify(usedCodes));
-
-                addToHistory(contentData);
-            } catch (error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'خطأ',
-                    text: 'الكود غير صالح! يرجى إدخال كود صحيح.',
-                });
-            }
+            });
         }
 
         function extractVideoId(url) {
