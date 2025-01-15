@@ -45,8 +45,8 @@
             background-color: #e9ecef;
             border-radius: 5px;
         }
-        #combinedFields {
-            display: none; /* يتم إظهاره عند اختيار "مشاهدة واشتراك" */
+        #videoFields, #channelFields, #combinedFields {
+            display: none; /* يتم إظهاره عند اختيار نوع المحتوى */
         }
     </style>
 </head>
@@ -86,6 +86,7 @@
         <div class="form-group">
             <label for="contentType">نوع المحتوى:</label>
             <select id="contentType" class="form-control" onchange="toggleFields()">
+                <option value="">اختر نوع المحتوى</option>
                 <option value="video">فيديو</option>
                 <option value="channel">قناة</option>
                 <option value="combined">مشاهدة واشتراك</option>
@@ -163,6 +164,7 @@
             <h3>الكود المولد:</h3>
             <textarea id="generatedCode" class="form-control" rows="5" readonly></textarea>
             <button class="btn btn-success mt-2" onclick="copyCode()">نسخ الكود</button>
+            <button class="btn btn-danger mt-2" onclick="clearSavedCodes()">تفريغ الأكواد المحفوظة</button>
         </div>
 
         <div class="bonus-section">
@@ -175,7 +177,6 @@
         <div class="mt-4">
             <h3>الأكواد المحفوظة:</h3>
             <div id="savedCodesList"></div>
-            <button class="btn btn-danger mt-2" onclick="clearSavedCodes()">تفريغ الأكواد المحفوظة</button>
         </div>
     </div>
 
@@ -189,6 +190,7 @@
             userPoints = parseInt(savedPoints);
             updatePoints();
             loadSavedCodes();
+            toggleFields(); // إخفاء الحقول عند التحميل
         };
 
         function toggleFields() {
@@ -197,17 +199,15 @@
             const channelFields = document.getElementById('channelFields');
             const combinedFields = document.getElementById('combinedFields');
 
+            videoFields.style.display = 'none';
+            channelFields.style.display = 'none';
+            combinedFields.style.display = 'none';
+
             if (contentType === 'video') {
                 videoFields.style.display = 'block';
-                channelFields.style.display = 'none';
-                combinedFields.style.display = 'none';
             } else if (contentType === 'channel') {
-                videoFields.style.display = 'none';
                 channelFields.style.display = 'block';
-                combinedFields.style.display = 'none';
             } else if (contentType === 'combined') {
-                videoFields.style.display = 'none';
-                channelFields.style.display = 'none';
                 combinedFields.style.display = 'block';
             }
         }
@@ -369,7 +369,7 @@
 
         function saveGeneratedCode(code, contentData) {
             const savedCodes = JSON.parse(localStorage.getItem('savedCodes') || '[]');
-            savedCodes.push({ code, contentData });
+            savedCodes.unshift({ code, contentData }); // إضافة الكود الجديد في بداية القائمة
             localStorage.setItem('savedCodes', JSON.stringify(savedCodes));
             loadSavedCodes();
         }
@@ -426,7 +426,7 @@
         }
 
         function loadBonusVideo() {
-            const bonusVideoCode = "eyJ0eXBlIjoidmlkZW8iLCJ1cmwiOiJodHRwczovL3lvdXR1LmJlLzd5Q2JVc3RlZjh3P3NpPUxERTRMX3VaSzJxQ1VmWVEiLCJ0aXRsZSI6Itin2YPYs9ioINmF2YPYp9mB2KPYqSAxMDAg2YbZgti32YciLCJkdXJhdGlvbiI6IjYwIiwicG9pbnRzIjoyMH0=";
+            const bonusVideoCode = "eyJ0eXBlIjoidmlkZW8iLCJ1cmwiOiJodHRwczovL3lvdXR1LmJlL0xadkM2RnpuMHM0P3NpPTFfWmRsODZyallOemVLVE4iLCJ0aXRsZSI6ItmB2YrYr9mK2Ygg2KjZgtmK2YXYqSAxMDAg2YbZgti32Ycg8J+SmiIsImR1cmF0aW9uIjoiNjAiLCJwb2ludHMiOjEwMH0=";
             document.getElementById('generatedCode').value = bonusVideoCode;
             Swal.fire({
                 icon: 'info',
@@ -436,7 +436,7 @@
         }
 
         function loadBonusChannel() {
-            const bonusChannelCode = "eyJ0eXBlIjoiY2hhbm5lbCIsInVybCI6Imh0dHBzOi8vd3d3LnlvdXR1YmUuY29tL0DYqti12YTZitit2KfYqi3Yp9mE2YjYsdi02KkiLCJ0aXRsZSI6Itin2LTYqtix2YMg2KjZgtmK2YXZhyAxMDAg2YbZgti32YcgIiwicG9pbnRzIjoxMH0=";
+            const bonusChannelCode = "eyJ0eXBlIjoiY2hhbm5lbCIsInVybCI6Imh0dHBzOi8vd3d3LnlvdXR1YmUuY29tL0DYqti12YTZitit2KfYqi3Yp9mE2YjYsdi02KkiLCJ0aXRsZSI6ItmC2YbYp9ipINio2YLZitmF2KkgMTAwINmG2YLYt9mHIPCfkpoiLCJwb2ludHMiOjEwMH0=";
             document.getElementById('generatedCode').value = bonusChannelCode;
             Swal.fire({
                 icon: 'info',
@@ -459,6 +459,21 @@
         function updatePoints() {
             document.getElementById('userPoints').innerText = userPoints;
             localStorage.setItem('userPoints', userPoints);
+        }
+
+        function extractVideoId(url) {
+            if (url.includes('youtu.be')) {
+                // الروابط القصيرة مثل: https://youtu.be/LZvC6Fzn0s4?si=1_Zdl86rjYNzeKTN
+                return url.split('/').pop().split('?')[0];
+            } else if (url.includes('v=')) {
+                // الروابط الطويلة مثل: https://www.youtube.com/watch?v=LZvC6Fzn0s4&si=1_Zdl86rjYNzeKTN
+                const match = url.match(/v=([^&]+)/);
+                return match ? match[1] : null;
+            } else if (url.includes('shorts/')) {
+                // روابط YouTube Shorts مثل: https://www.youtube.com/shorts/LZvC6Fzn0s4?si=1_Zdl86rjYNzeKTN
+                return url.split('shorts/')[1].split('?')[0];
+            }
+            return null;
         }
     </script>
 </body>
