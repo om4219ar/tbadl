@@ -509,23 +509,41 @@
                 historyItem.className = 'history-item';
 
                 if (item.type === 'combined') {
-                    // عرض بيانات المزيج
+                    // عرض بيانات المزيج (فيديو + قناة)
                     historyItem.innerHTML = `
-                        <h5>فيديو: ${item.video.title}</h5>
-                        <p>نقاط الفيديو: ${item.video.points}</p>
-                        <p>مدة الفيديو: ${item.video.duration} ثانية</p>
-                        <a href="${item.video.url}" target="_blank" class="btn btn-primary">زيارة الفيديو</a>
-                        <h5 class="mt-3">قناة: ${item.channel.title}</h5>
-                        <p>نقاط الاشتراك: ${item.channel.points}</p>
-                        <a href="${item.channel.url}" target="_blank" class="btn btn-primary">زيارة القناة</a>
+                        <div class="mb-3">
+                            <h5>فيديو: ${item.video.title}</h5>
+                            <p>نقاط الفيديو: ${item.video.points}</p>
+                            <p>مدة الفيديو: ${item.video.duration} ثانية</p>
+                            <a href="${item.video.url}" target="_blank" class="btn btn-primary">زيارة الفيديو</a>
+                        </div>
+                        <div class="mb-3">
+                            <h5>قناة: ${item.channel.title}</h5>
+                            <p>نقاط الاشتراك: ${item.channel.points}</p>
+                            <a href="${item.channel.url}" target="_blank" class="btn btn-primary">زيارة القناة</a>
+                        </div>
+                        <hr> <!-- خط فاصل بين العناصر -->
                     `;
-                } else {
-                    // عرض بيانات الفيديو أو القناة العادية
+                } else if (item.type === 'video') {
+                    // عرض بيانات الفيديو
                     historyItem.innerHTML = `
-                        <h5>${item.title}</h5>
-                        <p>النقاط: ${item.points}</p>
-                        ${item.duration ? `<p>المدة: ${item.duration} ثانية</p>` : ''}
-                        <a href="${item.url}" target="_blank" class="btn btn-primary">زيارة ${item.type === 'video' ? 'الفيديو' : 'القناة'}</a>
+                        <div class="mb-3">
+                            <h5>فيديو: ${item.title}</h5>
+                            <p>النقاط: ${item.points}</p>
+                            <p>المدة: ${item.duration} ثانية</p>
+                            <a href="${item.url}" target="_blank" class="btn btn-primary">زيارة الفيديو</a>
+                        </div>
+                        <hr> <!-- خط فاصل بين العناصر -->
+                    `;
+                } else if (item.type === 'channel') {
+                    // عرض بيانات القناة
+                    historyItem.innerHTML = `
+                        <div class="mb-3">
+                            <h5>قناة: ${item.title}</h5>
+                            <p>النقاط: ${item.points}</p>
+                            <a href="${item.url}" target="_blank" class="btn btn-primary">زيارة القناة</a>
+                        </div>
+                        <hr> <!-- خط فاصل بين العناصر -->
                     `;
                 }
 
